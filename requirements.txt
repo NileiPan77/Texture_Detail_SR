@@ -1,4 +1,3 @@
 OpenEXR
 pyexr
 opencv-python-headless
-opencv-python
