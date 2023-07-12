@@ -1,26 +1,27 @@
 import streamlit as st
 import numpy as np
-import OpenEXR
-import Imath
-import io
 import cv2
+import pyexr
 from fourier_filtering import *
+import tempfile
+import os
 
 st.set_page_config(layout='wide')
 
 @st.cache_data
 def load_image(uploaded_file):
-    byte_stream = io.BytesIO(uploaded_file.getvalue())
-    img = OpenEXR.InputFile(byte_stream)
-    FLOAT = Imath.PixelType(Imath.PixelType.FLOAT)
-    dw = img.header()['dataWindow']
-    size = (dw.max.x - dw.min.x + 1, dw.max.y - dw.min.y + 1)
+    # save the file to local temporarily
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".exr") as tmp:
+        tmp.write(uploaded_file.getvalue())
+        tmp_file_name = tmp.name
 
-    redstr = img.channel('B')
-    red = np.frombuffer(redstr, dtype = np.float32)
-    red.shape = (size[1], size[0]) # Numpy arrays are (row, col)
+    # load the image
+    exr = pyexr.open(tmp_file_name).get('B')[:, :, 0]
 
-    return red
+    # delete the temporary file
+    os.remove(tmp_file_name)
+
+    return exr
 
 st.title("Texture Transfer GUI")
 

@@ -1,1 +1,2 @@
-OpenEXR @ git+https://github.com/jamesbowman/openexrpython.git
+OpenEXR
+pyexr
