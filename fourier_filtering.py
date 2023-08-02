@@ -51,6 +51,10 @@ def circular_mask(shape, r):
     return mask2
 
 def cufourier_filtering(target_exr, base_exr, r = 180, r_high = 120, degree = 1):
+    # Apply a median filter to remove noise
+    # target_exr = cv2.medianBlur(target_exr, 5)
+    base_exr = cv2.medianBlur(base_exr, 5)
+
     # Copy the images to the GPU
     target_exr_torch = torch.from_numpy(target_exr).cuda()
     base_exr_torch = torch.from_numpy(base_exr).cuda()
@@ -73,7 +77,7 @@ def cufourier_filtering(target_exr, base_exr, r = 180, r_high = 120, degree = 1)
     lowpass_filter = torch_butterworth_lowpass(r, img_shape, degree)
 
     # Apply the high-pass filter to image1
-    f1_highpass = f1 * highpass_filter * 3
+    f1_highpass = f1 * highpass_filter
 
     # Apply the low-pass filter to image2
     f2_lowpass = f2 * lowpass_filter
@@ -84,12 +88,19 @@ def cufourier_filtering(target_exr, base_exr, r = 180, r_high = 120, degree = 1)
     # Shift the zero-frequency component back to the corners and perform the inverse Fourier Transform
     image_combined_torch = torch.abs(torch.fft.ifft2(torch.fft.ifftshift(combined)))
     
+    # Scale the combined image
+    image_combined_torch *= 4.0
+
     # Convert the result back to a numpy array on the CPU
     image_combined = image_combined_torch.cpu().numpy()
 
     return image_combined
 
 def cufourier_filtering_3out(target_exr, base_exr, r = 180, r_high = 120, degree = 1, degree_high = 1):
+    # Apply a median filter to remove noise
+    # target_exr = cv2.medianBlur(target_exr, 5)
+    base_exr = cv2.medianBlur(base_exr, 5)
+
     # Copy the images to the GPU
     target_exr_torch = torch.from_numpy(target_exr).cuda()
     base_exr_torch = torch.from_numpy(base_exr).cuda()
@@ -111,7 +122,7 @@ def cufourier_filtering_3out(target_exr, base_exr, r = 180, r_high = 120, degree
     lowpass_filter = torch_butterworth_lowpass(r, img_shape, degree)
 
     # Apply the high-pass filter to image1
-    f1_highpass = f1 * highpass_filter * 3
+    f1_highpass = f1 * highpass_filter
 
     # Apply the low-pass filter to image2
     f2_lowpass = f2 * lowpass_filter
@@ -127,6 +138,9 @@ def cufourier_filtering_3out(target_exr, base_exr, r = 180, r_high = 120, degree
 
     # lowpass image
     f2_lowpass = torch.abs(torch.fft.ifft2(torch.fft.ifftshift(f2_lowpass))).cpu().numpy()
+
+    # Scale the combined image
+    image_combined_torch *= 4.0
 
     # Convert the result back to a numpy array on the CPU
     image_combined = image_combined_torch.cpu().numpy()

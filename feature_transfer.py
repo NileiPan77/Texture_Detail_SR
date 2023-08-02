@@ -13,20 +13,39 @@ import argparse
 import sys
 import pyexr
 import time
+import configparser
+from upscale_exr import *
+
+# Define a struct for parameters
+class Parameters:
+    def __init__(self, config, section='DEFAULT'):
+        self.base_diffuse = config.get(section, 'base_diffuse')
+        self.base_cavity = config.get(section, 'base_cavity')
+        self.target_diffuse = config.get(section, 'target_diffuse')
+        self.target_height = config.get(section, 'target_height')
+        self.output_dir = config.get(section, 'output_dir')
+        self.align = config.getboolean(section, 'align')
+        self.cutoff_high = config.getint(section, 'cutoff_high')
+        self.cutoff_low = config.getint(section, 'cutoff_low')
+        self.degree = config.getint(section, 'degree')
+        self.output_name = config.get(section, 'output_name')
 
 def feature_transfer(args):
     # load images
     print("Loading images...")
-    base_cavity = pyexr.open(args.base_cavity).get('B')[:, :, 0]
-    target_height = pyexr.open(args.target_height).get('B')[:, :, 0]
+    base_cavity = pyexr.open(args.base_cavity).get()[:, :, 0]
+    target_height = pyexr.open(args.target_height).get()[:, :, 0]
 
     # shape check
     print("Checking image shapes...")
     if base_cavity.shape != target_height.shape:
+        scale = target_height.shape[0] / base_cavity.shape[0]
         print('Image shape not match')
         print('base_cavity.shape: ', base_cavity.shape)
         print('target_height.shape: ', target_height.shape)
-        return
+        print('Scaling base_cavity by ', scale)
+        base_cavity = bicubic_upscale(base_cavity, scale)
+        
 
     # align images
     print("Aligning images...")
@@ -35,7 +54,7 @@ def feature_transfer(args):
         target_diffuse = pyexr.open(args.target_diffuse).get()
         # align images
         base_diffuse, base_cavity = align_using_landmarks(base_diffuse, target_diffuse, base_cavity)
-        del target_diffuse
+        del target_diffuse, base_diffuse
     
     # transfer features
     print("Transferring features...")
@@ -62,22 +81,19 @@ def feature_transfer(args):
     
 
 if __name__ == '__main__':
-    # parse arguments
-    parser = argparse.ArgumentParser(description='Transfer features from img2 to img1')
-    parser.add_argument('--base_diffuse', type=str, help='path to base diffuse map', default='.\target\base_diffuse.png')
-    parser.add_argument('--base_cavity', type=str, help='path to base cavity map', default='.\target\base_cavity.exr')
-    parser.add_argument('--target_diffuse', type=str, help='path to target diffuse map', default='.\target\target_diffuse.png')
-    parser.add_argument('--target_height', type=str, help='path to target height map', default='.\target\target_height.exr')
-    parser.add_argument('--output_dir', type=str, help='path to output directory', default='./target/results/')
-    parser.add_argument('--align', type=bool, help='align images using landmarks', default=False)
-    parser.add_argument('--cutoff_high', type=float, help='cutoff high frequency for fourier filtering', default=60)
-    parser.add_argument('--cutoff_low', type=float, help='cutoff low frequency for fourier filtering', default=120)
-    parser.add_argument('--degree', type=int, help='degree of polynomial for fourier filtering', default=10)
-    parser.add_argument('--output_name', type=str, help='output name', default='out_cavi.exr')
-    args = parser.parse_args()
 
-    start = time.time()
+    # check sys args
+    if len(sys.argv) != 2:
+        print('Usage: python feature_transfer.py [section_name]')
+        exit()
+
+    # get section name
+    section = sys.argv[1]
+
+    # parse arguments
+    config = configparser.ConfigParser()
+    config.read('./config.ini')
+    args = Parameters(config, section)
+
     # run feature transfer
     feature_transfer(args)
-
-    print(f'Time used in total: {time.time() - start}')
