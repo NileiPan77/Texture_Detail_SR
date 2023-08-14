@@ -1,4 +1,4 @@
-# Texture Transfer
+# Texture Detail SR
 
 The main idea of this algorithm is to transfer fine details like pores and wrinkles from a high resolution texture to a noisy scanned texture.
 
@@ -6,7 +6,7 @@ To achieve this, I used Fourier transform and converted image to frequency domai
 
 Finally, apply high pass filter to the high-res texture to extract the small details (rapid changes), low pass filter to the low-res texture to extract the shape and large features of input texture (gradual changes).
 
-<img src="C:\Users\Administrator\Pictures\1024px-Filters_order5.svg.png" alt="1024px-Filters_order5.svg" style="zoom:50%;" />
+<img src=".\1024px-Filters_order5.svg.png" alt="1024px-Filters_order5.svg" style="zoom:50%;" />
 
 ## Usage
 
