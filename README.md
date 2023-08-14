@@ -6,7 +6,7 @@ To achieve this, I used Fourier transform and converted image to frequency domai
 
 Finally, apply high pass filter to the high-res texture to extract the small details (rapid changes), low pass filter to the low-res texture to extract the shape and large features of input texture (gradual changes).
 
-<img src=".\1024px-Filters_order5.svg.png" alt="1024px-Filters_order5.svg" style="zoom:50%;" />
+<img src=".\img\1024px-Filters_order5.svg.png" alt="1024px-Filters_order5.svg" style="zoom:50%;" />
 
 ## Usage
 
