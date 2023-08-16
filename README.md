@@ -2,7 +2,7 @@
 
 The main idea of this algorithm is to transfer fine details like pores and wrinkles from a high resolution texture to a noisy scanned texture.
 
-To achieve this, I used Fourier transform and converted image to frequency domain for easier transfer process. Then I used Butterworth filter for both high pass and low pass filtering, as it is often referred to as a **maximally flat magnitude filter** and thus provide a smooth transition around the cutoff frequency while behave ripple-less.
+To achieve this, Fourier transform is used to convert image to frequency domain for easier transfer process. Butterworth filter for both high pass and low pass filtering is applied, as it is often referred to as a **maximally flat magnitude filter** and thus provide a smooth transition around the cutoff frequency while behave ripple-less.
 
 Finally, apply high pass filter to the high-res texture to extract the small details (rapid changes), low pass filter to the low-res texture to extract the shape and large features of input texture (gradual changes).
 
@@ -18,10 +18,10 @@ where `[section_name]` refers to the sections inside `config.ini` which have for
 
 ```ini
 [DEFAULT]
-base_diffuse = .\target\base_diffive.png
-base_cavity = .\data\cavity.exr
-target_diffuse = .\target\target_diffuse.png
-target_height = .\data\height_16k.exr
+base_diffuse = ./target/base_diffive.png
+base_cavity = ./data/cavity.exr
+target_diffuse = ./target/target_diffuse.png
+target_height = ./data/height_16k.exr
 output_dir = ./target/results/
 align = False
 cutoff_high = 120
@@ -51,9 +51,3 @@ output_name = out_cavity.exr
 `degree`: Degree of the Butterworth filter, higher the degree, more rapid changes around the cutoff frequency, `int`
 
 `output_name`: Output name of the result cavity map, `str`
-
-
-
-
-
-## 
